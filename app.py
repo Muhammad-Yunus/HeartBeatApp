@@ -10,5 +10,6 @@ def index():
 def index():
     return render_template("model.html")
     
+    
 if __name__ == '__main__':
     app.run(debug=True)
