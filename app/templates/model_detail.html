@@ -1,17 +1,17 @@
 {% extends "_layout.html" %}
 {% block content %}
 <!-- Content Header (Page header) -->
-<section class="content-header">
+<section class="container">
   <h1>
-    {{ 'Add a New ECG Data' if form.name.data is none else form.name.data }}
+    {{ 'Upload Deep Learning Model' if form.name.data is none else form.name.data }}
   </h1>
   <ol class="breadcrumb">
-    <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
-    <li class="active">ECG Data</li>
+    <li class="breadcrumb-item"><a href="#">Home</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Upload Deep Learning Model</li>
   </ol>
 </section>
 
-<section class="content">
+<section class="container">
   <div class="row">
     <div class="col-lg-6">
       {% from 'rich_widget/_form_widget.html' import f_form %}
@@ -24,8 +24,9 @@
 
           <!-- custom field download & label uploaded file -->
           {% if item.type == 'FileField' and formCtrl._id %}
-            <div class="form-group">
-              <div class="col-sm-4 form-control-label"><b>Uploaded File</b></div>
+            <hr>
+            <div class="form-group row">
+              <label class="col-form-label col-sm-4">Uploaded File</label>
               <div class="col-sm-8">
                 <div class="">
                   {{ formCtrl.download_name }} 

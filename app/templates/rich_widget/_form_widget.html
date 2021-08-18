@@ -1,22 +1,22 @@
 {% macro f_form(formCtrl, form) -%}
-<div class="box box-info">
+<div class="card">
     <form   class="form-horizontal" 
             action="{{ url_for(formCtrl.form_act, _id = formCtrl._id) }}" 
             method="post"
             {{ 'enctype=multipart/form-data' if formCtrl.is_multipart else '' }}>
-    <div class="box-header with-border">
-        <h3 class="box-title"> {{ formCtrl.form_name }}</h3>
+    <div class="card-header with-border bg-white">
+        <h3 class="card-title"> {{ formCtrl.form_name }}</h3>
     </div>
-    <!-- /.box-header -->
-    <div class="box-body">
+    <!-- /.card-header -->
+    <div class="card-body">
         {{ form.hidden_tag() }}
         {% for item in form %}
             {{ caller('content', item) }}
         {% endfor %}
     </div>
-    <!-- /.box-body -->
-    <div class="box-footer">
-        <a href="{{ url_for(formCtrl.cancel_act) }}" class="btn btn-default">Cancel</a>
+    <!-- /.card-body -->
+    <div class="card-footer bg-white">
+        <a href="{{ url_for(formCtrl.cancel_act) }}" class="btn btn-secondary">Cancel</a>
         {% for item in form %}
             {{ caller('footer', item) }}
         {% endfor %}
@@ -24,7 +24,7 @@
             <a href="{{ url_for(formCtrl.delete_act, _id = formCtrl._id) }}" class="btn btn-danger pull-right mr_5">Delete</a>
         {% endif %}
     </div>
-    <!-- /.box-footer -->
+    <!-- /.card-footer -->
     </form>
 </div>
 {%- endmacro %}
