@@ -8,17 +8,20 @@
     </head>
     <body class="bg-light">
       <!-- nav bar menu-->
-        <nav class="navbar navbar-light bg-info pl-5 mb-5 navbar-custom">
+        <nav class="navbar navbar-light bg-danger pl-5 mb-5 navbar-custom">
             <a class="navbar-brand" href="#">
                 <img src="/static/img/logo.png" width="40" height="40" class="d-inline-block align-center mr-3 bg-white rounded" alt="">
                 Atrial Fibrillation Detection Systems
             </a>
             <ul class="nav justify-content-end">
                 <li class="nav-item active">
-                  <a class="nav-link" href="{{ url_for('index')}}"><span class="fa fa-home mr-1"></span>Detection</a>
+                  <a class="nav-link" href="{{ url_for('index')}}"><span class="fa fa-magic mr-2"></span>Detection</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="{{ url_for('model')}}"><span class="fa fa-cubes mr-1"></span>Model</a>
+                  <a class="nav-link" href="{{ url_for('models')}}"><span class="fa fa-cubes mr-2"></span>Models</a>
+                </li>
+                <li class="nav-item mr-4">
+                  <a class="nav-link" href="{{ url_for('about')}}"><span class="fa fa-info-circle mr-2"></span>About</a>
                 </li>
             </ul>
         </nav>
