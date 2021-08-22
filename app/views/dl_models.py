@@ -8,7 +8,7 @@ from app.models.dl_models import DL_Model
 
 class DLModelsForm(FlaskForm):
     name = StringField('Model Name',
-                           validators=[DataRequired(), Length(min=2, max=20)])
+                           validators=[DataRequired(), Length(min=2, max=255)])
     is_used = BooleanField('Set as default Model?')
     file_model = FileField('Model File (.h5)')
     submit = SubmitField('Save')

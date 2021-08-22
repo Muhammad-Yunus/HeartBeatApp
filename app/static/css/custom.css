@@ -24,3 +24,14 @@
     width: 15px; 
     height: 15px;
 }
+
+.alert-fixed {
+    position:fixed; 
+    top: 50px; 
+    left: 250px;
+    right: 250px; 
+    width: unset;
+    z-index:9999; 
+    border-radius:0px;
+    box-shadow: 2px 2px 5px grey;
+}

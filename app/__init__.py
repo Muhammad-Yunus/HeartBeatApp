@@ -17,22 +17,119 @@ from app.views.dl_models import DLModelsForm
 
 from app.utils.table_utils import GetTableHeader, getTableRecords, initTableRecords
 from app.utils.download_utils import getFullPath
-from app.utils.models_utils import save_model_h5
+from app.utils.models_utils import save_model_h5, init_detection
+
+from app.core_service.preprocessing import Preprocessing
+from app.core_service.denoising import  Denoising
+from app.core_service.feature_extraction import FeatureExtraction
+from app.core_service.detection import Detection
+
+feature_labels, ___ = init_detection(None, None, None, None, 0, 0)
+
+Prepro = Preprocessing()
+Denoise = Denoising()
+Feature = FeatureExtraction()
+Detector = Detection(list(feature_labels.keys()))
 
 # ####################################################################################################
 #
-#                                           MAIN PAGE CONTROLLER
+#                                        DETECTION PAGE CONTROLLER
 #
 # ####################################################################################################
+
+
 @app.route("/")
 def index():
-    return render_template("index.html")
+    feature_labels, signal = init_detection(None, None, None, None, 0, 0)
+    return render_template("index.html",
+                            feature_labels=feature_labels,
+                            signal=signal)
 
+
+@app.route('/', methods=['POST'])
+def detect():
+    try :
+        uploaded_file = request.files['file']
+        feature_labels, signal = init_detection(None, None, None, None, 0, 0)
+        if uploaded_file.filename != '':
+            if request.form['feature'] not in list(feature_labels.keys()):
+                flash('Cannot detect signal for feature %s. Make sure to select feature first!' % request.form['feature'], 'danger')
+                return render_template("index.html",
+                            feature_labels=feature_labels,
+                            signal=signal)
+
+            root_path = os.path.dirname(os.path.dirname(__file__))
+            full_path = os.path.join(root_path, 'app/static/csv-upload', uploaded_file.filename).replace("\\", "/")
+            uploaded_file.save(full_path)
+            
+            print("\n\n\n")
+            print("[INFO] Apply preprocessing data...")
+            ecg_dfs = Prepro.transform(filename=full_path)
+
+            print("\n\n\n")
+            print("[INFO] Apply denoising data...")
+            X = Denoise.transform(ecg_dfs)
+
+            print("\n\n\n")
+            print("[INFO] Apply feature extraction data...")
+            Feature.reshape(X)
+            for ft in request.form['feature'].split(","):
+                if ft == 'rr_interval' :
+                    Feature.rr_interval()
+                if ft == 'qrs_complex' :
+                    Feature.qrs_complex()
+                if ft == 'qt_interval' :    
+                    Feature.qt_interval()
+
+            Feature.post_reshape(len(request.form['feature'].split(",")))
+
+            print("\n\n\n")
+            print("[INFO] Apply Detection data...")
+            Detector.transform(Feature.X, request.form['feature'])
+
+            print(Detector.prediction_label)
+
+            print("\n\n\n")
+            print("[INFO] Show data...")
+            curr_index = 0
+            index_length = len(Feature.r_peak_list)
+            r_peaks = Feature.r_peak_list[curr_index]
+            label = Detector.prediction_label[curr_index]
+            proba = "%.2f" % (Detector.prediction_proba[curr_index] * 100)
+            signal_data = Feature.X_signal[curr_index]
+
+            # save plot image
+            img_path = []
+            for ch in range(0,2):
+                print("[INFO] Save plot for channel %d..." % ch)
+                path = Feature.plot_r_peaks("%s___%d_%d.png" % (uploaded_file.filename, curr_index, ch), 
+                                                r_peaks[ch], signal_data[ch], 
+                                                root_path = root_path,
+                                                label="Detected R Peaks - %s - index %d , channel %d" % 
+                                                            (uploaded_file.filename, curr_index, ch + 1))
+                img_path.append(path.replace("\\", "/"))
+            
+            flash('File ' + uploaded_file.filename + ' has been detected successfully!', 'success')
+            feature_labels, signal = init_detection(request.form['feature'], img_path, label, proba, index_length, curr_index)
+        else : 
+            flash('Cannot detect signal if no uploaded file!', 'danger')
+
+        return render_template("index.html",
+                            feature_labels=feature_labels,
+                            signal=signal)
+
+    except Exception as e :
+        flash('Error %s' % e, 'danger')
+        feature_labels, signal = init_detection(None, None, None, None, 0, 0)
+        return redirect(url_for('index'))
+
+# @app.route('/')
+# def next():
 
 
 # ####################################################################################################
 #
-#                                          MODEL PAGE CONTROLLER
+#                                          MODELS PAGE CONTROLLER
 #
 # ####################################################################################################
 @app.route("/models", methods=["GET", "POST"])
@@ -45,7 +142,7 @@ def models():
     tableRecords, min_page, max_page, count = getTableRecords(DL_Model, search_key, filters, sort_type, _col, page, per_page)
 
     # Create Table Header
-    col_exclude = ['file_type']
+    col_exclude = ['file_type', 'name']
     sort_exclude = ['id', 'is_used']
     overide_label = dict(
         id = 'No'

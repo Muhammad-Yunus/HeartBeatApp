@@ -19,7 +19,6 @@
           {% call(loop, record) f_tableRecords(headerCtrl, tableHeader, tableRecords, footerCtrl) %}
             <!-- Create Table Content -->
             <td>{{ loop.index + tableRecords.per_page*(tableRecords.page - 1) }}</td>
-            <td>{{ record['name'] }}</td>
             <td>{{ record['file_name'] }}</td>
             <td><i class= "fa {{ 'fa-check text-green' if record['is_used'] else 'fa-close'}}" ></i></td>
             <td>{{ record['upload_at'].strftime("%m/%d/%Y %H:%M:%S") }}</td>
