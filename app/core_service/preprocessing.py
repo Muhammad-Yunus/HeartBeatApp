@@ -15,8 +15,10 @@ class Preprocessing():
         self.sep = sep
         self.fs = fs
         self.sample_size = sample_size
+        self.filename = ""
 
     def read_csv_to_df(self, filename, path, sep=";"):
+        self.filename = os.path.basename(filename)
         df = pd.read_csv(os.path.join(path, filename), sep=sep, skiprows = [0])
         print("\n\n[INFO] finish read file - %s\n\n" % filename)
 

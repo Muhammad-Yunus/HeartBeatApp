@@ -32,13 +32,13 @@
             <!-- link navigate ECG index  -->
             {% if signal.index_length > 0 %}
             <div class="btn-group py-3 float-right">
-                <button type="button" class="btn btn-light">
+                <a href="{{ url_for('navigate_signal', _index = signal.curr_index - 1) }}"  class="btn btn-light {{'disabled' if signal.curr_index == 0 else ''}}">
                     <i class="fa fa-chevron-left"></i> Prev
-                </button>
+                </a>
                 <span class="btn btn-light">{{ signal.curr_index}}/{{signal.index_length}}</span>
-                <button type="button" class="btn btn-light mr-3">
+                <a href="{{ url_for('navigate_signal', _index = signal.curr_index + 1) }}" class="btn btn-light mr-3 {{'disabled' if signal.curr_index == (signal.index_length - 1) else ''}}">
                     Next <i class="fa fa-chevron-right"></i>
-                </button> 
+                </a> 
             </div>
             {% endif %}
             <!-- end link navigate ECG index  -->
@@ -47,14 +47,14 @@
     <div class="rounded bg-danger p-2">
         <div class="container bg-light mb-2 p-2">
             {% if signal.predicted_label %}
-                Predicted Label : <b>{{signal.predicted_label}} ({{ signal.predicted_proba }}%)</b>
+                Predicted Label : <b>{{signal.predicted_label}} ({{ signal.predicted_proba }}%)</b> - index <b>{{ signal.curr_index}}/{{signal.index_length}}</b>
             {% else %} 
                 Predicted Label : N/A
             {% endif %}    
         </div>
-        {% if signal.img_path %}
-            {% for img_path in signal.img_path %}
-            <img src={{ img_path }}  class="img-fluid mb-2">
+        {% if signal.signal_img %}
+            {% for path in signal.signal_img %}
+            <img src={{ path }}  class="img-fluid mb-2">
             {% endfor %}
         {% else %}
             <img src="/static/img/empty_signals.png"  class="img-fluid">

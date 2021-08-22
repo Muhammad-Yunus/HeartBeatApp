@@ -25,6 +25,7 @@ from app.core_service.feature_extraction import FeatureExtraction
 from app.core_service.detection import Detection
 
 feature_labels, ___ = init_detection(None, None, None, None, 0, 0)
+root_path = os.path.dirname(os.path.dirname(__file__))
 
 Prepro = Preprocessing()
 Denoise = Denoising()
@@ -36,6 +37,60 @@ Detector = Detection(list(feature_labels.keys()))
 #                                        DETECTION PAGE CONTROLLER
 #
 # ####################################################################################################
+
+def plot_handler(curr_index, root_path):
+    filename = Prepro.filename
+    selected_feature = Detector.selected_feature
+    index_length = 0
+    label = Detector.prediction_label[curr_index]
+    proba = "%.2f" % (Detector.prediction_proba[curr_index] * 100)
+    signal_data = Feature.X_signal[curr_index]
+
+    # save plot image
+    img_path = []
+    for ft in selected_feature.split(",") :
+        print("[INFO] generating plot for feature %s" % ft)
+        if ft == 'rr_interval' :
+            r_peaks = Feature.r_peak_list[curr_index]
+            index_length = len(Feature.r_peak_list)
+            for ch in range(0,2):
+                print("[INFO] Save plot for channel %d..." % ch)
+                path = Feature.plot_r_peaks("%s___%s_%d_%d.png" % (filename, ft, curr_index, ch), 
+                                                r_peaks[ch], signal_data[ch], 
+                                                root_path = root_path,
+                                                label="Detected R Peaks - %s - index %d , channel %d" % 
+                                                            (filename, curr_index, ch + 1))
+                img_path.append(path.replace("\\", "/"))
+
+        if ft == 'qrs_complex' :
+            r_onsets = Feature.r_onset_list[curr_index]
+            r_offsets = Feature.r_offset_list[curr_index]
+            index_length = len(Feature.r_onset_list)
+            for ch in range(0,2):
+                print("[INFO] Save plot for channel %d..." % ch)
+                path = Feature.plot_QRS_complex("%s___%s_%d_%d.png" % (filename, ft, curr_index, ch), 
+                                                r_onsets[ch], r_offsets[ch], signal_data[ch], 
+                                                root_path = root_path,
+                                                label="Detected QRS Complex - %s - index %d , channel %d" % 
+                                                            (filename, curr_index, ch + 1))
+                img_path.append(path.replace("\\", "/"))
+
+        if ft == 'qt_interval' :
+            r_onsets = Feature.r_onset_list[curr_index]
+            t_offsets = Feature.t_offset_list[curr_index]
+            index_length = len(Feature.r_onset_list)
+            for ch in range(0,2):
+                print("[INFO] Save plot for channel %d..." % ch)
+                path = Feature.plot_QT_Interval("%s___%s_%d_%d.png" % (filename, ft, curr_index, ch), 
+                                                r_onsets[ch], t_offsets[ch], signal_data[ch], 
+                                                root_path = root_path,
+                                                label="Detected QT Interval - %s - index %d , channel %d" % 
+                                                            (filename, curr_index, ch + 1))
+                img_path.append(path.replace("\\", "/"))
+
+    feature_labels, signal = init_detection(selected_feature, img_path, label, proba, index_length, curr_index)
+    return feature_labels, signal
+
 
 
 @app.route("/")
@@ -58,7 +113,6 @@ def detect():
                             feature_labels=feature_labels,
                             signal=signal)
 
-            root_path = os.path.dirname(os.path.dirname(__file__))
             full_path = os.path.join(root_path, 'app/static/csv-upload', uploaded_file.filename).replace("\\", "/")
             uploaded_file.save(full_path)
             
@@ -87,30 +141,11 @@ def detect():
             print("[INFO] Apply Detection data...")
             Detector.transform(Feature.X, request.form['feature'])
 
-            print(Detector.prediction_label)
-
             print("\n\n\n")
-            print("[INFO] Show data...")
-            curr_index = 0
-            index_length = len(Feature.r_peak_list)
-            r_peaks = Feature.r_peak_list[curr_index]
-            label = Detector.prediction_label[curr_index]
-            proba = "%.2f" % (Detector.prediction_proba[curr_index] * 100)
-            signal_data = Feature.X_signal[curr_index]
-
-            # save plot image
-            img_path = []
-            for ch in range(0,2):
-                print("[INFO] Save plot for channel %d..." % ch)
-                path = Feature.plot_r_peaks("%s___%d_%d.png" % (uploaded_file.filename, curr_index, ch), 
-                                                r_peaks[ch], signal_data[ch], 
-                                                root_path = root_path,
-                                                label="Detected R Peaks - %s - index %d , channel %d" % 
-                                                            (uploaded_file.filename, curr_index, ch + 1))
-                img_path.append(path.replace("\\", "/"))
+            print("[INFO] Show data in index %d..." % 0)
+            feature_labels, signal = plot_handler(curr_index=0, root_path=root_path)
             
             flash('File ' + uploaded_file.filename + ' has been detected successfully!', 'success')
-            feature_labels, signal = init_detection(request.form['feature'], img_path, label, proba, index_length, curr_index)
         else : 
             flash('Cannot detect signal if no uploaded file!', 'danger')
 
@@ -120,11 +155,22 @@ def detect():
 
     except Exception as e :
         flash('Error %s' % e, 'danger')
-        feature_labels, signal = init_detection(None, None, None, None, 0, 0)
         return redirect(url_for('index'))
 
-# @app.route('/')
-# def next():
+@app.route('/<int:_index>', methods=["GET"])
+def navigate_signal(_index):
+    try : 
+        print("\n\n\n")
+        print("[INFO] Show data in index %d..." % _index)
+        feature_labels, signal = plot_handler(curr_index=_index, root_path=root_path)
+
+        return render_template("index.html",
+                    feature_labels=feature_labels,
+                    signal=signal)    
+    except Exception as e :
+        flash('Error %s' % e, 'danger')
+        return redirect(url_for('index'))
+
 
 
 # ####################################################################################################
