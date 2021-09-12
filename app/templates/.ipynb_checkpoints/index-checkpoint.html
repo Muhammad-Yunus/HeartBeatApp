@@ -24,16 +24,6 @@
                 </select>
             </div>
             <!-- end field select feature -->
-            <!-- field select feature -->
-            <div class="btn-group py-3 pl-3">
-                <select class="custom-select" name="sampling-rate">
-                    <option value="empty" {{ 'selected' if signal.feature == '' }}>Select fs</option>
-                    {% for key, value in sampling_rates.items() %}
-                    <option value="{{ key }}" {{ 'selected' if signal.feature == key}}>{{ value }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <!-- end field select feature -->
             <!-- button detection -->
             <button type="submit" class="btn btn-light ml-3">
                 <i class="fa fa-magic mr-2"></i>Detect

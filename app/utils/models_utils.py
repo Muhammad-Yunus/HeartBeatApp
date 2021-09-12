@@ -19,6 +19,10 @@ def init_detection(feature, signal_img, label, proba, index_length, curr_index):
         "qt_interval,qrs_complex" : "QT Interval & QRS Complex",
         "rr_interval,qt_interval,qrs_complex" : "RR Interval, QT Interval & QRS Complex"
     }
+    sampling_rates = {
+        "250" : "250 hz",
+        "128" : "128 hz"
+    }
     signal = {}
     signal["feature"] = feature
     signal["index_length"] = index_length
@@ -27,4 +31,4 @@ def init_detection(feature, signal_img, label, proba, index_length, curr_index):
     signal["predicted_label"] = label
     signal["predicted_proba"] = proba
 
-    return feature_labels, signal
+    return feature_labels, signal, sampling_rates

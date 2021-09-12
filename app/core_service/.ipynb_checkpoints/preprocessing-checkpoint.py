@@ -103,27 +103,24 @@ class Preprocessing():
         result[1::2] = (data[1:] + data[:-1]) / 2
         return result
     
-    def upsampling(self, ECG_ALS_Norm):
+    def upsampling(self, ECG_ALS_Norm)
         new_fs = 250 # Hz 
         ECG_ALS_Norm_Up = []
         for data in ECG_ALS_Norm :
             data1 = np.array(data[0][:,0])
             data2 = np.array(data[1][:,0])
-            data1 = self.upsampling_twice(data1).reshape(-1, 1)  
-            data2 = self.upsampling_twice(data2).reshape(-1, 1)  
+            data1 = upsampling_twice(data1).reshape(-1, 1)  
+            data2 = upsampling_twice(data2).reshape(-1, 1)  
             ECG_ALS_Norm_Up.append([data1, data2])
         return ECG_ALS_Norm_Up
         
-    def transform(self, filename, selectedFs=250):
+    def transform(self, filename):
         print("\n\n[INFO] Read CSV...\n\n")
         ECG = self.read_csv_to_df(filename, self.path, sep=self.sep)
         print("\n\n[INFO] Apply Baseline Wander Removal...\n\n")
         ECG_ALS = self.remove_baseline_als(ECG)
         print("\n\n[INFO] Apply Signal Normalization...\n\n")
         ECG_ALS_Norm = self.min_max_normalization(ECG_ALS)
-        if(selectedFs != self.fs):
-            print("\n\n[INFO] Apply Upsampling from %dhz to %dhz...\n\n" %(selectedFs, self.fs))
-            ECG_ALS_Norm = self.upsampling(ECG_ALS_Norm)
 
         data = []
         pad_size = self.sample_size*self.fs # 6s x 250hz

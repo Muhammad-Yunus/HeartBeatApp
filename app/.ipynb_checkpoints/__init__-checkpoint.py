@@ -24,7 +24,7 @@ from app.core_service.denoising import  Denoising
 from app.core_service.feature_extraction import FeatureExtraction
 from app.core_service.detection import Detection
 
-feature_labels, ___, ___ = init_detection(None, None, None, None, 0, 0)
+feature_labels, ___ = init_detection(None, None, None, None, 0, 0)
 root_path = os.path.dirname(os.path.dirname(__file__))
 
 Prepro = Preprocessing()
@@ -88,17 +88,16 @@ def plot_handler(curr_index, root_path):
                                                             (filename, curr_index, ch + 1))
                 img_path.append(path.replace("\\", "/"))
 
-    feature_labels, signal, sampling_rates = init_detection(selected_feature, img_path, label, proba, index_length, curr_index)
-    return feature_labels, signal, sampling_rates
+    feature_labels, signal = init_detection(selected_feature, img_path, label, proba, index_length, curr_index)
+    return feature_labels, signal
 
 
 
 @app.route("/")
 def index():
-    feature_labels, signal, sampling_rates = init_detection(None, None, None, None, 0, 0)
+    feature_labels, signal = init_detection(None, None, None, None, 0, 0)
     return render_template("index.html",
                             feature_labels=feature_labels,
-                            sampling_rates=sampling_rates,
                             signal=signal)
 
 
@@ -106,20 +105,12 @@ def index():
 def detect():
     try :
         uploaded_file = request.files['file']
-        feature_labels, signal, sampling_rates = init_detection(None, None, None, None, 0, 0)
+        feature_labels, signal = init_detection(None, None, None, None, 0, 0)
         if uploaded_file.filename != '':
             if request.form['feature'] not in list(feature_labels.keys()):
                 flash('Cannot detect signal for feature %s. Make sure to select feature first!' % request.form['feature'], 'danger')
                 return render_template("index.html",
                             feature_labels=feature_labels,
-                            sampling_rates=sampling_rates,
-                            signal=signal)
-
-            if request.form['sampling-rate'] not in list(sampling_rates.keys()):
-                flash('Cannot detect sampling rate (fs). Make sure to select sampling rate first!' % request.form['sampling-rate'], 'danger')
-                return render_template("index.html",
-                            feature_labels=feature_labels,
-                            sampling_rates=sampling_rates,
                             signal=signal)
 
             full_path = os.path.join(root_path, 'app/static/csv-upload', uploaded_file.filename).replace("\\", "/")
@@ -127,8 +118,7 @@ def detect():
             
             print("\n\n\n")
             print("[INFO] Apply preprocessing data...")
-            selectedFs = int(request.form['sampling-rate'])
-            ecg_dfs = Prepro.transform(filename=full_path, selectedFs=selectedFs)
+            ecg_dfs = Prepro.transform(filename=full_path)
 
             print("\n\n\n")
             print("[INFO] Apply denoising data...")
@@ -153,7 +143,7 @@ def detect():
 
             print("\n\n\n")
             print("[INFO] Show data in index %d..." % 0)
-            feature_labels, signal, sampling_rates = plot_handler(curr_index=0, root_path=root_path)
+            feature_labels, signal = plot_handler(curr_index=0, root_path=root_path)
             
             flash('File ' + uploaded_file.filename + ' has been detected successfully!', 'success')
         else : 
@@ -161,7 +151,6 @@ def detect():
 
         return render_template("index.html",
                             feature_labels=feature_labels,
-                            sampling_rates=sampling_rates,
                             signal=signal)
 
     except Exception as e :
@@ -173,11 +162,10 @@ def navigate_signal(_index):
     try : 
         print("\n\n\n")
         print("[INFO] Show data in index %d..." % _index)
-        feature_labels, signal, sampling_rates = plot_handler(curr_index=_index, root_path=root_path)
+        feature_labels, signal = plot_handler(curr_index=_index, root_path=root_path)
 
         return render_template("index.html",
                     feature_labels=feature_labels,
-                    sampling_rates=sampling_rates,
                     signal=signal)    
     except Exception as e :
         flash('Error %s' % e, 'danger')
